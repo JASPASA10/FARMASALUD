@@ -13,8 +13,28 @@ const setupSchema = z.object({
   name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres')
 });
 
+// Configurar CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Manejar OPTIONS request para CORS
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
   try {
+    // Verificar método
+    if (req.method !== 'POST') {
+      return NextResponse.json(
+        { error: 'Método no permitido' },
+        { status: 405, headers: corsHeaders }
+      );
+    }
+
     const body = await req.json();
     const validatedData = setupSchema.parse(body);
 
@@ -29,7 +49,7 @@ export async function POST(req: Request) {
     if (existingAdmin) {
       return NextResponse.json(
         { error: 'Ya existe un usuario administrador' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -41,7 +61,7 @@ export async function POST(req: Request) {
     if (existingUser) {
       return NextResponse.json(
         { error: 'El email ya está registrado' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -67,20 +87,23 @@ export async function POST(req: Request) {
         ...userWithoutPassword,
         _id: result.insertedId
       }
-    }, { status: 201 });
+    }, { 
+      status: 201,
+      headers: corsHeaders
+    });
   } catch (error: any) {
     console.error('Error al crear usuario administrador:', error);
     
     if (error.name === 'ZodError') {
       return NextResponse.json(
         { error: 'Datos de validación inválidos', details: error.errors },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
       { error: 'Error al crear el usuario administrador' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 } 
