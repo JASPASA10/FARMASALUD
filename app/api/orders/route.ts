@@ -52,7 +52,7 @@ export async function GET() {
         }
       ])
       .toArray();
-
+    
     return NextResponse.json(orders);
   } catch (error) {
     console.error('Error al obtener pedidos:', error);
@@ -183,8 +183,8 @@ export async function PUT(req: Request) {
 
     const result = await db.collection('orders').updateOne(
       { _id: new ObjectId(id) },
-      { 
-        $set: { 
+      {
+        $set: {
           status,
           updatedAt: new Date()
         }

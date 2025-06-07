@@ -1,112 +1,106 @@
-# Sistema de Gestión Empresarial
+# FarmaSalud - Sistema de Inventario
 
-Backend robusto para un sistema de gestión empresarial con autenticación segura, gestión de inventario, pedidos y clientes, desarrollado con Next.js y MongoDB Atlas.
+Sistema de gestión de inventario para farmacias desarrollado con Next.js y Firebase.
 
 ## Características
 
-- 🔐 Autenticación robusta con validación estricta
-- 📦 Gestión de inventario en tiempo real
-- 🛍️ Sistema de pedidos con control de stock
-- 👥 Gestión de clientes
-- 📊 Dashboard con métricas en tiempo real
-- 🚀 Listo para producción en Vercel
+- Autenticación de usuarios con Firebase
+- Gestión de inventario en tiempo real
+- Interfaz moderna y responsiva
+- Despliegue automático con Vercel
 
 ## Requisitos Previos
 
 - Node.js 18 o superior
-- MongoDB Atlas (cuenta gratuita)
-- pnpm (gestor de paquetes)
+- Cuenta en Firebase
+- Cuenta en Vercel (para despliegue)
 
-## Configuración
+## Configuración Local
 
 1. Clona el repositorio:
 ```bash
-git clone [URL_DEL_REPOSITORIO]
-cd [NOMBRE_DEL_PROYECTO]
+git clone <url-del-repositorio>
+cd farmasalud
 ```
 
 2. Instala las dependencias:
 ```bash
-pnpm install
+npm install
 ```
 
-3. Crea un archivo `.env` en la raíz del proyecto:
-```env
-MONGODB_URI=tu_uri_de_mongodb_atlas
-JWT_SECRET=tu_secreto_jwt
+3. Crea un archivo `.env.local` con las siguientes variables:
+```
+NEXT_PUBLIC_FIREBASE_API_KEY=tu_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=tu_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=tu_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=tu_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=tu_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=tu_measurement_id
 ```
 
 4. Inicia el servidor de desarrollo:
 ```bash
-pnpm dev
+npm run dev
 ```
+
+## Despliegue en Vercel
+
+1. Crea una cuenta en [Vercel](https://vercel.com) si no tienes una.
+
+2. Conecta tu repositorio de GitHub con Vercel.
+
+3. En la configuración del proyecto en Vercel, agrega las siguientes variables de entorno:
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
+   - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
+
+4. Vercel detectará automáticamente que es un proyecto Next.js y lo desplegará.
+
+## Configuración de Firebase
+
+1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com)
+
+2. Habilita Authentication:
+   - Ve a Authentication > Sign-in method
+   - Habilita Email/Password
+
+3. Configura Firestore:
+   - Ve a Firestore Database
+   - Crea una base de datos en modo de prueba
+   - Configura las reglas de seguridad:
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if request.auth != null;
+       }
+     }
+   }
+   ```
 
 ## Estructura del Proyecto
 
 ```
-├── app/
-│   ├── api/
-│   │   ├── auth/         # Endpoints de autenticación
-│   │   ├── inventory/    # Gestión de inventario
-│   │   ├── orders/       # Sistema de pedidos
-│   │   ├── customers/    # Gestión de clientes
-│   │   └── dashboard/    # Métricas en tiempo real
-├── models/              # Esquemas y validaciones
-├── lib/                # Utilidades y configuración
-└── middleware/         # Middleware de autenticación
+├── app/                # Páginas y rutas de la aplicación
+├── components/         # Componentes reutilizables
+├── lib/               # Utilidades y configuración
+├── public/            # Archivos estáticos
+└── styles/            # Estilos globales
 ```
 
-## API Endpoints
+## Tecnologías Utilizadas
 
-### Autenticación
-- `POST /api/auth/register` - Registro de usuarios
-- `POST /api/auth/login` - Inicio de sesión
-
-### Inventario
-- `GET /api/inventory` - Listar productos
-- `POST /api/inventory` - Crear producto
-- `PUT /api/inventory` - Actualizar producto
-- `DELETE /api/inventory` - Eliminar producto
-
-### Pedidos
-- `GET /api/orders` - Listar pedidos
-- `POST /api/orders` - Crear pedido
-- `PUT /api/orders` - Actualizar estado
-- `GET /api/orders/user` - Pedidos por usuario
-
-### Clientes
-- `GET /api/customers` - Listar clientes
-- `POST /api/customers` - Crear cliente
-- `PUT /api/customers` - Actualizar cliente
-- `DELETE /api/customers` - Eliminar cliente
-
-### Dashboard
-- `GET /api/dashboard` - Métricas en tiempo real
-
-## Despliegue
-
-El proyecto está optimizado para ser desplegado en Vercel:
-
-1. Conecta tu repositorio de GitHub con Vercel
-2. Configura las variables de entorno en Vercel
-3. ¡Listo! Tu aplicación estará en línea
-
-## Seguridad
-
-- Validación estricta de datos con Zod
-- Contraseñas encriptadas con bcrypt
-- Tokens JWT para autenticación
-- Protección de rutas con middleware
-- Validación de stock en tiempo real
-
-## Contribución
-
-1. Fork el proyecto
-2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+- Next.js 14
+- Firebase (Authentication, Firestore)
+- Tailwind CSS
+- TypeScript
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles. 
+MIT 

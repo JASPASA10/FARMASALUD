@@ -8,25 +8,32 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { auth } from "@/lib/firebase"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import Link from "next/link"
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!email || !password) {
-      setError("Por favor ingrese email y contraseña")
+    if (!email || !password || !confirmPassword) {
+      setError("Por favor complete todos los campos")
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden")
       return
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      await createUserWithEmailAndPassword(auth, email, password)
       router.push("/dashboard")
     } catch (error: any) {
       setError(error.message)
@@ -37,11 +44,11 @@ export default function LoginPage() {
     <div className="flex h-screen w-full items-center justify-center bg-slate-50">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">FarmaSalud</CardTitle>
-          <CardDescription className="text-center">Ingrese sus credenciales para acceder al sistema</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">Registro</CardTitle>
+          <CardDescription className="text-center">Cree una cuenta para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-4">
             {error && <div className="text-sm font-medium text-destructive text-center">{error}</div>}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -62,15 +69,26 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)} 
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+              <Input 
+                id="confirmPassword" 
+                type="password" 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+              />
+            </div>
             <Button type="submit" className="w-full">
-              Iniciar sesión
+              Registrarse
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">Sistema de Inventario para Farmacias</p>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">
+            ¿Ya tiene una cuenta? Inicie sesión
+          </Link>
         </CardFooter>
       </Card>
     </div>
   )
-}
+} 
