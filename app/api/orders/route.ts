@@ -5,16 +5,16 @@ import { ObjectId } from 'mongodb';
 
 // Esquema de validación para los items del pedido
 const orderItemSchema = z.object({
-  productId: z.string(),
-  quantity: z.number().min(1),
-  price: z.number().min(0),
+  productId: z.string().min(1, 'El ID del producto es requerido'),
+  quantity: z.number().min(1, 'La cantidad debe ser mayor a 0'),
+  price: z.number().min(0, 'El precio debe ser mayor o igual a 0'),
 });
 
 // Esquema de validación para el pedido
 const orderSchema = z.object({
-  customerId: z.string(),
-  items: z.array(orderItemSchema),
-  total: z.number().min(0),
+  customerId: z.string().min(1, 'El ID del cliente es requerido'),
+  items: z.array(orderItemSchema).min(1, 'El pedido debe tener al menos un item'),
+  total: z.number().min(0, 'El total debe ser mayor o igual a 0'),
   status: z.enum(['pending', 'processing', 'completed', 'cancelled']),
   paymentMethod: z.enum(['cash', 'card', 'transfer']),
   notes: z.string().optional(),
@@ -67,7 +67,11 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    console.log('Datos recibidos:', body); // Log para debugging
+
+    // Validar datos de entrada
     const validatedData = orderSchema.parse(body);
+    console.log('Datos validados:', validatedData); // Log para debugging
 
     const client = await clientPromise;
     const db = client.db('farmacia');
@@ -78,6 +82,7 @@ export async function POST(req: Request) {
     });
 
     if (!customer) {
+      console.log('Cliente no encontrado:', validatedData.customerId); // Log para debugging
       return NextResponse.json(
         { error: 'Cliente no encontrado' },
         { status: 404 }
@@ -91,6 +96,7 @@ export async function POST(req: Request) {
       });
 
       if (!product) {
+        console.log('Producto no encontrado:', item.productId); // Log para debugging
         return NextResponse.json(
           { error: `Producto no encontrado: ${item.productId}` },
           { status: 404 }
@@ -98,6 +104,7 @@ export async function POST(req: Request) {
       }
 
       if (product.stock < item.quantity) {
+        console.log('Stock insuficiente:', { product, requested: item.quantity }); // Log para debugging
         return NextResponse.json(
           { error: `Stock insuficiente para el producto: ${product.name}` },
           { status: 400 }
@@ -111,6 +118,8 @@ export async function POST(req: Request) {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    console.log('Creando pedido:', newOrder); // Log para debugging
 
     const result = await db.collection('orders').insertOne(newOrder);
 
@@ -135,14 +144,23 @@ export async function POST(req: Request) {
     );
   } catch (error: any) {
     console.error('Error al crear pedido:', error);
+    
     if (error.name === 'ZodError') {
       return NextResponse.json(
         { error: 'Datos de validación inválidos', details: error.errors },
         { status: 400 }
       );
     }
+
+    if (error.name === 'BSONTypeError') {
+      return NextResponse.json(
+        { error: 'ID de cliente o producto inválido' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Error al crear el pedido' },
+      { error: 'Error al crear el pedido', details: error.message },
       { status: 500 }
     );
   }
