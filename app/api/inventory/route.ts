@@ -44,21 +44,21 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await db.collection('inventory').insertOne({
+    const newProduct = {
       ...validatedData,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
+    };
+
+    const result = await db.collection('inventory').insertOne(newProduct);
 
     return NextResponse.json(
       { 
         message: 'Producto creado exitosamente', 
         productId: result.insertedId,
         product: {
-          ...validatedData,
-          _id: result.insertedId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          ...newProduct,
+          _id: result.insertedId
         }
       },
       { status: 201 }
@@ -114,14 +114,14 @@ export async function PUT(req: Request) {
       }
     }
 
+    const updatedProduct = {
+      ...validatedData,
+      updatedAt: new Date(),
+    };
+
     const result = await db.collection('inventory').updateOne(
       { _id: new ObjectId(id) },
-      {
-        $set: {
-          ...validatedData,
-          updatedAt: new Date(),
-        },
-      }
+      { $set: updatedProduct }
     );
 
     if (result.matchedCount === 0) {
@@ -134,9 +134,8 @@ export async function PUT(req: Request) {
     return NextResponse.json({ 
       message: 'Producto actualizado exitosamente',
       product: {
-        ...validatedData,
-        _id: id,
-        updatedAt: new Date()
+        ...updatedProduct,
+        _id: id
       }
     });
   } catch (error: any) {
