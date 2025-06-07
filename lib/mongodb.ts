@@ -16,6 +16,19 @@ const options = {
 let client;
 let clientPromise: Promise<MongoClient>;
 
+async function initializeDatabase(client: MongoClient) {
+  const db = client.db('farmacia');
+  
+  // Crear índices para las colecciones
+  await db.collection('users').createIndex({ email: 1 }, { unique: true });
+  await db.collection('inventory').createIndex({ sku: 1 }, { unique: true });
+  await db.collection('customers').createIndex({ email: 1 }, { unique: true });
+  await db.collection('orders').createIndex({ createdAt: -1 });
+  
+  console.log('Base de datos inicializada con índices');
+  return client;
+}
+
 if (process.env.NODE_ENV === 'development') {
   // En desarrollo, usa una variable global para que la conexión persista entre recargas
   let globalWithMongo = global as typeof globalThis & {
@@ -27,7 +40,7 @@ if (process.env.NODE_ENV === 'development') {
     globalWithMongo._mongoClientPromise = client.connect()
       .then(client => {
         console.log('Conexión a MongoDB establecida en desarrollo');
-        return client;
+        return initializeDatabase(client);
       })
       .catch(error => {
         console.error('Error al conectar a MongoDB:', error);
@@ -41,7 +54,7 @@ if (process.env.NODE_ENV === 'development') {
   clientPromise = client.connect()
     .then(client => {
       console.log('Conexión a MongoDB establecida en producción');
-      return client;
+      return initializeDatabase(client);
     })
     .catch(error => {
       console.error('Error al conectar a MongoDB:', error);
